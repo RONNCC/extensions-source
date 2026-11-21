@@ -30,13 +30,10 @@ abstract class Bbato : KeiSource() {
 
     // ============================== Popular ==============================
 
-    override suspend fun getPopularManga(page: Int) = client.get("$baseUrl/home", Fetch.DOCUMENT).asJsoup().select("#most-viewed .mt-rank-item").map {
-        SManga.create().apply {
-            setUrlWithoutDomain(it.attr("abs:href"))
-            title = it.selectFirst(".mt-rank-title")!!.text()
-            thumbnail_url = it.selectFirst("img")?.getImageUrl()
-        }
-    }.let { MangasPage(it, false) }
+    override suspend fun getPopularManga(page: Int): MangasPage {
+        val path = if (page == 1) "/filter?sort=views" else "/filter?sort=views&page=$page"
+        return client.get("$baseUrl$path", Fetch.DOCUMENT).asJsoup().parseMangasPage()
+    }
 
     // ============================== Latest ===============================
 
