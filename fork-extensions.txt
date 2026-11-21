@@ -1,0 +1,4 @@
+# Extensions the fork builds and publishes (one module dir per line: src/<lang>/<name>).
+# Add a line when a fix branch changes an extension; remove it once upstream ships the fix.
+# Published to: https://github.com/RONNCC/extensions-source/raw/repo/index.pb
+src/all/lunaranime
