@@ -6,7 +6,6 @@ on:
   push:
     branches:
       - main
-      - fork-release
     paths:
       - '**'
       - '!**.md'
@@ -33,13 +32,16 @@ jobs:
 
       - name: Resolve modules
         id: modules
+        shell: bash
         run: |
-          modules=$(grep -v '^[[:space:]]*\(#\|$\)' fork-extensions.txt | while read -r dir; do
-            [ -f "$dir/build.gradle.kts" ] || { echo "::error::$dir is not an extension module" >&2; exit 1; }
-            echo ":${dir//\//:}:assembleRelease"
-          done | tr '\n' ' ')
-          [ -n "$modules" ] || { echo "::error::fork-extensions.txt is empty or invalid"; exit 1; }
-          echo "tasks=$modules" >> "$GITHUB_OUTPUT"
+          tasks=()
+          while read -r dir; do
+            dir=${dir%/}
+            [ -f "$dir/build.gradle.kts" ] || { echo "::error::'$dir' in fork-extensions.txt is not an extension module"; exit 1; }
+            tasks+=(":${dir//\//:}:assembleRelease")
+          done < <(grep -v '^[[:space:]]*\(#\|$\)' fork-extensions.txt || true)
+          [ ${#tasks[@]} -gt 0 ] || { echo "::error::fork-extensions.txt lists no modules"; exit 1; }
+          echo "tasks=${tasks[*]}" >> "$GITHUB_OUTPUT"
 
       - name: Set up Java
         uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
@@ -77,16 +79,23 @@ jobs:
           ./gradlew $TASKS
 
       - name: Publish repo branch
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           FINGERPRINT: ${{ steps.key.outputs.fingerprint }}
         run: |
           url="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          if git ls-remote --exit-code --heads "$url" repo > /dev/null; then
+          rc=0
+          git ls-remote --exit-code --heads "$url" repo > /dev/null || rc=$?
+          if [ "$rc" -eq 0 ]; then
             git clone --quiet --depth 1 --branch repo "$url" "$RUNNER_TEMP/repo"
-          else
+          elif [ "$rc" -eq 2 ]; then
+            # exit code 2: remote reachable, branch does not exist yet
             git init --quiet --initial-branch repo "$RUNNER_TEMP/repo"
             git -C "$RUNNER_TEMP/repo" remote add origin "$url"
+          else
+            echo "::error::git ls-remote failed with exit code $rc"
+            exit "$rc"
           fi
           python -m pip install --user --upgrade protobuf
           cd "$RUNNER_TEMP/repo"

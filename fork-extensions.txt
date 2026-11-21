@@ -1,4 +1,13 @@
 # Extensions the fork builds and publishes (one module dir per line: src/<lang>/<name>).
-# Add a line when a fix branch changes an extension; remove it once upstream ships the fix.
+# Add a line when a fix branch changes an extension, remove it once upstream ships the fix.
 # Published to: https://github.com/RONNCC/extensions-source/raw/repo/index.pb
-src/all/lunaranime
+# Every listed module must have a bumped versionCode (baseVersionCode for multisrc themes).
+src/en/bbato
+src/en/rinkocomics
+src/es/aedex
+src/es/komiwa
+src/es/kumanga
+src/id/comicaso
+src/id/westmanga
+src/it/mangaworld
+src/it/mangaworldadult

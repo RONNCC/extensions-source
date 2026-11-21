@@ -29,7 +29,7 @@ source_dir = Path(sys.argv[4])
 repo_name = os.environ["GITHUB_REPOSITORY"]
 repo_dir = Path.cwd()
 release_base_url = f"https://github.com/{repo_name}/releases/download"
-icon_base_url = f"https://raw.githubusercontent.com/{repo_name}/{sha}"
+icon_base_url = f"https://raw.githubusercontent.com/{repo_name}/main"
 icon_file = "res/mipmap-xhdpi/ic_launcher.png"
 
 
@@ -57,7 +57,7 @@ release_assets: dict[str, str] = (
 
 built: list[tuple[index_pb2.Extension, Path, Path, bool]] = []
 new_release_assets: dict[str, str] = {}
-tag = sha[:7]
+tag = f"repo-{sha[:7]}"
 
 for info_file in artifacts_dir.glob("**/keiyoushi-source-info.json"):
     info = json.loads(info_file.read_text("utf-8"))
@@ -157,7 +157,7 @@ if not files:
 if not run_gh("release", "view", tag, "--repo", repo_name, "--json", "tagName", success_errors=("release not found",)):
     run_gh(
         "release", "create", tag, "--repo", repo_name, "--draft",
-        "--title", f"Repository Update {tag}",
+        "--target", sha, "--title", f"Repository Update {tag}",
         "--notes", f"Automated update from {repo_name}@{sha}",
     )
 

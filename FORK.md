@@ -17,14 +17,18 @@ to `index.pb` through `repo.json`'s `index_v2`. The repo only exists after the f
 
 ## How it works
 
-- Triggers: push to `main` or `fork-release`, or manual run (`Actions > Fork publish > Run workflow`;
-  the workflow file must be on the default branch for manual runs).
+- Triggers: push to `main` only (a single publisher, so two branches can't overwrite each other's index),
+  or manual run (`Actions > Fork publish > Run workflow`; the workflow file must be on `main`).
 - Builds `assembleRelease` for every module in `fork-extensions.txt` (one `src/<lang>/<name>` per line;
   `#` comments allowed). Add a line when a fix changes an extension, remove it when upstream ships the fix.
+  A bad path in the list fails the job (it never silently drops modules).
+  Example: if upstream breaks Lunar Manga again, fix it in `src/all/lunaranime`, bump its `versionCode`
+  and add `src/all/lunaranime` to the list. It is not listed now because the fork's copy would be
+  identical to upstream v1.6.10 and would only force a reinstall under the fork key.
   Bump `versionCode` in the extension's `build.gradle.kts` so Mihon sees an update.
 - Signs with the fork keystore from the Actions secrets `SIGNING_KEY` (base64 PKCS12), `ALIAS`,
   `KEY_STORE_PASSWORD`, `KEY_PASSWORD`. Never commit a keystore (`*.jks` is gitignored).
-- Uploads APK + JAR to a GitHub release tagged with the short commit sha, then commits
+- Uploads APK + JAR to a GitHub release tagged `repo-<short sha>` (targeting that commit), then commits
   `index.pb`, `index.json`, `repo.json`, `index.html`, `release-assets.json` to the orphan branch `repo`.
 - The index contains only the extensions from `fork-extensions.txt`.
 
