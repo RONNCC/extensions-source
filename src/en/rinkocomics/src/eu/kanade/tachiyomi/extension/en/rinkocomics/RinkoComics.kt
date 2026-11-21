@@ -40,26 +40,16 @@ abstract class RinkoComics :
     private val preferences by getPreferencesLazy()
 
     override suspend fun getPopularManga(page: Int): MangasPage {
-        val document = client.get(baseUrl, Fetch.DOCUMENT).asJsoup()
+        val url = comicsUrl(page)
+            .addQueryParameter(SORT_PARAM, "views")
+            .build()
 
-        val entries = document.select(".comics-flex-pinned a.pinned-comic-card").mapNotNull { card ->
-            val url = card.attr("abs:href").trim()
-            if (url.isBlank()) return@mapNotNull null
-            val title = card.selectFirst(".pinned-comic-title")?.text()?.trim() ?: return@mapNotNull null
-
-            SManga.create().apply {
-                setUrlWithoutDomain(url)
-                this.title = title
-                thumbnail_url = card.selectFirst(".comic-thumbnail img")?.let { imageFromElement(it) }
-            }
-        }
-
-        return MangasPage(entries, false)
+        return parseComicsPage(client.get(url, Fetch.DOCUMENT).asJsoup())
     }
 
     override suspend fun getLatestUpdates(page: Int): MangasPage {
         val url = comicsUrl(page)
-            .addQueryParameter(SORT_PARAM, SortFilter.OPTIONS.first().second)
+            .addQueryParameter(SORT_PARAM, "updated")
             .build()
 
         return parseComicsPage(client.get(url, Fetch.DOCUMENT).asJsoup())
@@ -67,10 +57,9 @@ abstract class RinkoComics :
 
     override suspend fun getSearchMangaList(page: Int, query: String, filters: FilterList): MangasPage {
         val url = comicsUrl(page)
-            .addQueryParameter("post_type", "comic")
 
         if (query.isNotBlank()) {
-            url.addQueryParameter("s", query)
+            url.addQueryParameter("q", query)
         }
 
         filters.forEach { filter ->
@@ -106,62 +95,52 @@ abstract class RinkoComics :
     }
 
     private fun parseMangaDetails(document: Document): SManga = SManga.create().apply {
-        title = requireField(
-            document.selectFirst(".comic-info-upper h1")?.text()
-                ?: document.selectFirst("h1")?.text(),
-            "title",
-        )
+        title = requireField(document.selectFirst("h1")?.text(), "title")
 
         thumbnail_url = document.selectFirst("meta[property=og:image]")?.attr("content")
 
-        val authors = document.select(".comic-graph > span")
-            .map { it.text() }
-            .filter { it.isNotBlank() && it != "•" }
-            .distinct()
-
-        author = authors.firstOrNull()
-        artist = authors.getOrNull(1)
-
         status = parseStatus(
-            document.selectFirst(".comic-status span:last-child")?.text(),
+            document.selectFirst("dl dt:containsOwn(Status) + dd")?.text(),
         )
 
-        genre = document.select(".comic-genres .genres .genre")
+        genre = document.select("a[href*=/comics_genres/]")
             .joinToString { it.text() }
 
-        description = document.selectFirst(".comic-synopsis")?.text()?.trim()
+        description = buildString {
+            append(document.select("#cwSynopsis p").joinToString("\n\n") { it.text() })
+            document.selectFirst("span:containsOwn(Also known as:)")?.parent()?.ownText()?.trim()
+                ?.takeIf { it.isNotEmpty() }
+                ?.let { append("\n\nAlternative titles: ", it) }
+        }.trim().ifEmpty { null }
     }
 
     private suspend fun parseChapterList(document: Document): List<SChapter> {
         val hideLocked = preferences.getBoolean(PREF_HIDE_LOCKED, false)
 
         val chapters = LinkedHashMap<String, SChapter>()
-        fun addAll(items: List<SChapter>) {
+        fun addAll(items: List<SChapter>, hideLocked: Boolean) {
             items.forEach { chapter ->
+                if (hideLocked && chapter.url.endsWith(LOCK_SUFFIX)) return@forEach
                 if (!chapters.containsKey(chapter.url)) {
                     chapters[chapter.url] = chapter
                 }
             }
         }
 
-        addAll(parseChapterElements(document.select(CHAPTER_SELECTOR), hideLocked))
+        addAll(parseChapterElements(document.select(CHAPTER_SELECTOR)), hideLocked)
 
-        val loadMoreBtn = document.selectFirst("#loadMoreChaptersBtn")
+        val loadMoreBtn = document.selectFirst("#cwMoreChapters")
         val comicId = loadMoreBtn?.attr("data-comic-id").orEmpty()
+        val order = loadMoreBtn?.attr("data-order").orEmpty()
         val nonce = extractNonce(document).orEmpty()
         var offset = loadMoreBtn?.attr("data-offset")?.toIntOrNull() ?: 0
-        if (offset <= 0) {
-            offset = chapters.size
-        } else if (chapters.isNotEmpty() && offset > chapters.size) {
-            offset = chapters.size
-        }
 
         if (comicId.isNotBlank() && nonce.isNotBlank()) {
             while (true) {
-                val items = fetchMoreChapters(comicId, offset, nonce, hideLocked)
+                val items = fetchMoreChapters(comicId, offset, order, nonce)
                 if (items.isEmpty()) break
-                addAll(items)
-                offset += CHAPTERS_PER_PAGE
+                addAll(items, hideLocked)
+                offset += items.size
             }
         }
 
@@ -192,10 +171,10 @@ abstract class RinkoComics :
     override suspend fun fetchFilterData(): JsonElement {
         val document = client.get(comicsUrl(1).build(), Fetch.DOCUMENT).asJsoup()
 
-        return document.select(".ac-filter-group.ac-genre input[name='genres[]']")
+        return document.select("input[name='genres[]']")
             .mapNotNull { input ->
                 val slug = input.attr("value").trim()
-                val name = input.parent()?.selectFirst(".ac-option-text")?.text()?.trim().orEmpty()
+                val name = input.parent()?.text()?.trim().orEmpty()
                 if (slug.isBlank() || name.isBlank()) null else Pair(name, slug)
             }
             .toJsonElement()
@@ -232,43 +211,39 @@ abstract class RinkoComics :
     }
 
     private fun parseComicsPage(document: Document): MangasPage {
-        val entries = document.select("article.ac-card").mapNotNull { card ->
-            val url = card.selectFirst(".ac-title a")?.attr("abs:href")?.trim().orEmpty()
-            if (url.isBlank()) return@mapNotNull null
-            val title = requireField(card.selectFirst(".ac-title a")?.text(), "title")
+        val entries = document.select("li > a[href*=/comic/]:has(img)").mapNotNull { card ->
+            val url = card.attr("abs:href").trim()
+            val title = requireField(card.selectFirst(".line-clamp-2")?.text(), "title")
 
             SManga.create().apply {
                 setUrlWithoutDomain(url)
                 this.title = title
-                thumbnail_url = card.selectFirst(".ac-thumb img")?.let { imageFromElement(it) }
+                thumbnail_url = card.selectFirst("img")?.let { imageFromElement(it) }
             }
         }
 
-        val hasNextPage = document.selectFirst(".ac-pagination a.next") != null
+        val hasNextPage = document.selectFirst("nav[aria-label=Pages] a:containsOwn(›)") != null
 
         return MangasPage(entries, hasNextPage)
     }
 
-    private fun parseChapterElements(elements: List<Element>, hideLocked: Boolean): List<SChapter> {
+    private fun parseChapterElements(elements: List<Element>): List<SChapter> {
         return elements.mapNotNull { element ->
             val permalink = element.attr("data-permalink").trim()
-            val href = element.selectFirst("a")?.attr("abs:href").orEmpty()
+            val href = element.attr("abs:href")
             val url = permalink.ifBlank { href }
-            if (url.isBlank()) return@mapNotNull null
+            if (url.isBlank() || url.endsWith("#")) return@mapNotNull null
 
-            val name = element.selectFirst(".chapter-number")?.text()
-                ?: element.attr("data-title")
-            val dateText = element.selectFirst(".chapter-date")?.text()
-            val locked = isLocked(element)
-
-            if (locked && hideLocked) return@mapNotNull null
+            val texts = element.child(0).children()
+            val name = texts.firstOrNull()?.text() ?: element.attr("data-title")
+            val dateText = texts.getOrNull(1)?.text()?.substringBefore(" ·")
 
             SChapter.create().apply {
                 setUrlWithoutDomain(url)
                 this.name = name.trim()
                 date_upload = dateFormat.tryParseDate(dateText)
 
-                if (locked) {
+                if (isLocked(element)) {
                     this.name = "$LOCK_PREFIX${this.name}"
                     this.url += LOCK_SUFFIX
                 }
@@ -279,25 +254,25 @@ abstract class RinkoComics :
     private fun isLocked(element: Element): Boolean {
         val reason = element.attr("data-reason").lowercase(Locale.ROOT)
         if (reason.isNotBlank() && reason != "free") return true
-        if (element.hasClass("locked-chapter")) return true
+        if (element.hasClass("is-locked")) return true
 
-        val href = element.selectFirst("a")?.attr("href").orEmpty()
-        if (href.isBlank() || href == "#") return true
-
-        return element.selectFirst(".chapter_price") != null
+        val href = element.attr("href")
+        return href.isBlank() || href == "#"
     }
 
     private suspend fun fetchMoreChapters(
         comicId: String,
         offset: Int,
+        order: String,
         nonce: String,
-        hideLocked: Boolean,
     ): List<SChapter> {
         val formBody = FormBody.Builder()
             .add("action", "load_more_chapters")
             .add("nonce", nonce)
             .add("comic_id", comicId)
             .add("offset", offset.toString())
+            .add("order", order)
+            .add("ui", "v2")
             .build()
 
         val xhrHeaders = headers.newBuilder()
@@ -310,7 +285,7 @@ abstract class RinkoComics :
         if (html.isBlank()) return emptyList()
 
         val doc = Jsoup.parseBodyFragment(html)
-        return parseChapterElements(doc.select(CHAPTER_SELECTOR), hideLocked)
+        return parseChapterElements(doc.select(CHAPTER_SELECTOR))
     }
 
     private fun decodePages(payload: String): List<String> {
@@ -360,10 +335,10 @@ abstract class RinkoComics :
 
         companion object {
             val OPTIONS = listOf(
-                Pair("Newest First", "newest"),
-                Pair("Oldest First", "oldest"),
+                Pair("Latest update", "updated"),
+                Pair("Most viewed", "views"),
+                Pair("Newest series", "new"),
                 Pair("A-Z", "az"),
-                Pair("Z-A", "za"),
             )
         }
     }
@@ -384,8 +359,7 @@ abstract class RinkoComics :
         private const val SORT_PARAM = "sort"
         private const val LOCK_PREFIX = "🔒 "
         private const val LOCK_SUFFIX = "#lock"
-        private const val CHAPTER_SELECTOR = "li.chapter"
-        private const val CHAPTERS_PER_PAGE = 10
+        private const val CHAPTER_SELECTOR = "a.chapter-item"
         private val NONCE_REGEX = Regex(
             """comicworld_ajax\s*=\s*\{[^}]*"nonce"\s*:\s*"([^"]+)"""",
         )
