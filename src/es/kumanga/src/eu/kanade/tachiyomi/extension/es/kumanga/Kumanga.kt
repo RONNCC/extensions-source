@@ -142,6 +142,7 @@ abstract class Kumanga : KeiSource() {
         val readerUrl = if (chapter.url.startsWith("/manga/leer/")) {
             getChapterUrl(chapter)
         } else {
+            // Chapters redirect to their upload (/manga/c/<id>), or list one per group; the reader (/manga/leer/<id>) shares the id
             val upload = redirectClient.get(getChapterUrl(chapter), Fetch.DOCUMENT, ensureSuccess = false).use { response ->
                 response.header("Location") ?: run {
                     if (!response.isSuccessful) throw HttpException(response.code)
@@ -168,6 +169,7 @@ abstract class Kumanga : KeiSource() {
                         WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(ByteArray(0)))
                     }
                 }
+                // pages.js reads the list the reader's Alpine x-for template loops over (the variable name keeps changing)
                 poll {
                     evaluateJs(script) { result ->
                         result.parseAs<List<String>?>()?.takeIf { it.isNotEmpty() }?.let(::resolve)
@@ -185,6 +187,7 @@ abstract class Kumanga : KeiSource() {
         val base = readerUrl.toHttpUrl()
         return paths.mapIndexed { index, path ->
             val url = base.resolve(path)!!
+            // The site's image proxy carries the image url hex-encoded in src
             val image = url.queryParameter("src")?.takeIf(HEX_REGEX::matches)?.decodeHex()?.decodeToString()?.toHttpUrlOrNull() ?: url
             Page(index, imageUrl = image.toString())
         }
@@ -193,6 +196,7 @@ abstract class Kumanga : KeiSource() {
     override fun getImageRequest(page: Page): Request {
         val url = page.imageUrl!!.toHttpUrl()
         if (!url.host.endsWith(".googleusercontent.com")) return super.getImageRequest(page)
+        // googleusercontent answers 429 to the site's Referer
         return Request.Builder().url(url).headers(headers.newBuilder().removeAll("Referer").build()).build()
     }
 
