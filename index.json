@@ -1,0 +1,205 @@
+{
+  "name": "RONNCC Keiyoushi fork",
+  "badgeLabel": "FORK",
+  "signingKey": "0f09d897f1f2229fd5c450b982cb800657d31786a33566c87f5613854dace535",
+  "contact": {
+    "website": "https://github.com/RONNCC/extensions-source"
+  },
+  "extensionList": {
+    "extensions": [
+      {
+        "name": "Bbato",
+        "packageName": "eu.kanade.tachiyomi.extension.en.bbato",
+        "resources": {
+          "apkUrl": "https://github.com/RONNCC/extensions-source/releases/download/repo-66819a8/tachiyomi-en.bbato-v1.6.5.apk",
+          "iconUrl": "https://raw.githubusercontent.com/RONNCC/extensions-source/main/src/en/bbato/res/mipmap-xhdpi/ic_launcher.png",
+          "jarUrl": "https://github.com/RONNCC/extensions-source/releases/download/repo-66819a8/tachiyomi-en.bbato-v1.6.5.jar"
+        },
+        "extensionLib": "1.6",
+        "versionCode": "106005",
+        "versionName": "1.6.5",
+        "contentWarning": "CONTENT_WARNING_MIXED",
+        "sources": [
+          {
+            "id": "1678128543826757763",
+            "name": "Bbato",
+            "language": "en",
+            "homeUrl": "https://bato1.co.uk"
+          }
+        ]
+      },
+      {
+        "name": "Rinko Comics",
+        "packageName": "eu.kanade.tachiyomi.extension.en.rinkocomics",
+        "resources": {
+          "apkUrl": "https://github.com/RONNCC/extensions-source/releases/download/repo-66819a8/tachiyomi-en.rinkocomics-v1.6.3.apk",
+          "iconUrl": "https://raw.githubusercontent.com/RONNCC/extensions-source/main/src/en/rinkocomics/res/mipmap-xhdpi/ic_launcher.png",
+          "jarUrl": "https://github.com/RONNCC/extensions-source/releases/download/repo-66819a8/tachiyomi-en.rinkocomics-v1.6.3.jar"
+        },
+        "extensionLib": "1.6",
+        "versionCode": "106003",
+        "versionName": "1.6.3",
+        "contentWarning": "CONTENT_WARNING_SAFE",
+        "sources": [
+          {
+            "id": "4915548839286527736",
+            "name": "Rinko Comics",
+            "language": "en",
+            "homeUrl": "https://rinkocomics.com"
+          }
+        ]
+      },
+      {
+        "name": "Komiwa",
+        "packageName": "eu.kanade.tachiyomi.extension.es.komiwa",
+        "resources": {
+          "apkUrl": "https://github.com/RONNCC/extensions-source/releases/download/repo-66819a8/tachiyomi-es.komiwa-v1.6.6.apk",
+          "iconUrl": "https://raw.githubusercontent.com/RONNCC/extensions-source/main/src/es/komiwa/res/mipmap-xhdpi/ic_launcher.png",
+          "jarUrl": "https://github.com/RONNCC/extensions-source/releases/download/repo-66819a8/tachiyomi-es.komiwa-v1.6.6.jar"
+        },
+        "extensionLib": "1.6",
+        "versionCode": "106006",
+        "versionName": "1.6.6",
+        "contentWarning": "CONTENT_WARNING_MIXED",
+        "sources": [
+          {
+            "id": "62756090386045468",
+            "name": "Komiwa",
+            "language": "es",
+            "homeUrl": "https://www.komiwa.net"
+          }
+        ]
+      },
+      {
+        "name": "Kumanga",
+        "packageName": "eu.kanade.tachiyomi.extension.es.kumanga",
+        "resources": {
+          "apkUrl": "https://github.com/RONNCC/extensions-source/releases/download/repo-66819a8/tachiyomi-es.kumanga-v1.6.6.apk",
+          "iconUrl": "https://raw.githubusercontent.com/RONNCC/extensions-source/main/src/es/kumanga/res/mipmap-xhdpi/ic_launcher.png",
+          "jarUrl": "https://github.com/RONNCC/extensions-source/releases/download/repo-66819a8/tachiyomi-es.kumanga-v1.6.6.jar"
+        },
+        "extensionLib": "1.6",
+        "versionCode": "106006",
+        "versionName": "1.6.6",
+        "contentWarning": "CONTENT_WARNING_MIXED",
+        "sources": [
+          {
+            "id": "5818858964600650549",
+            "name": "Kumanga",
+            "language": "es",
+            "homeUrl": "https://www.kumanga.com"
+          }
+        ]
+      },
+      {
+        "name": "Aedex",
+        "packageName": "eu.kanade.tachiyomi.extension.es.templescanesp",
+        "resources": {
+          "apkUrl": "https://github.com/RONNCC/extensions-source/releases/download/repo-66819a8/tachiyomi-es.templescanesp-v1.6.79.apk",
+          "iconUrl": "https://raw.githubusercontent.com/RONNCC/extensions-source/main/src/es/aedex/res/mipmap-xhdpi/ic_launcher.png",
+          "jarUrl": "https://github.com/RONNCC/extensions-source/releases/download/repo-66819a8/tachiyomi-es.templescanesp-v1.6.79.jar"
+        },
+        "extensionLib": "1.6",
+        "versionCode": "106079",
+        "versionName": "1.6.79",
+        "contentWarning": "CONTENT_WARNING_NSFW",
+        "sources": [
+          {
+            "id": "4334604114708629478",
+            "name": "Aedex",
+            "language": "es",
+            "homeUrl": "https://aedexnox.com"
+          }
+        ]
+      },
+      {
+        "name": "Comicaso",
+        "packageName": "eu.kanade.tachiyomi.extension.id.comicaso",
+        "resources": {
+          "apkUrl": "https://github.com/RONNCC/extensions-source/releases/download/repo-66819a8/tachiyomi-id.comicaso-v1.6.6.apk",
+          "iconUrl": "https://raw.githubusercontent.com/RONNCC/extensions-source/main/src/id/comicaso/res/mipmap-xhdpi/ic_launcher.png",
+          "jarUrl": "https://github.com/RONNCC/extensions-source/releases/download/repo-66819a8/tachiyomi-id.comicaso-v1.6.6.jar"
+        },
+        "extensionLib": "1.6",
+        "versionCode": "106006",
+        "versionName": "1.6.6",
+        "contentWarning": "CONTENT_WARNING_MIXED",
+        "sources": [
+          {
+            "id": "1390978553596884683",
+            "name": "Comicaso",
+            "language": "id",
+            "homeUrl": "https://comicaso.site"
+          }
+        ]
+      },
+      {
+        "name": "West Manga",
+        "packageName": "eu.kanade.tachiyomi.extension.id.westmanga",
+        "resources": {
+          "apkUrl": "https://github.com/RONNCC/extensions-source/releases/download/repo-66819a8/tachiyomi-id.westmanga-v1.6.6.apk",
+          "iconUrl": "https://raw.githubusercontent.com/RONNCC/extensions-source/main/src/id/westmanga/res/mipmap-xhdpi/ic_launcher.png",
+          "jarUrl": "https://github.com/RONNCC/extensions-source/releases/download/repo-66819a8/tachiyomi-id.westmanga-v1.6.6.jar"
+        },
+        "extensionLib": "1.6",
+        "versionCode": "106006",
+        "versionName": "1.6.6",
+        "contentWarning": "CONTENT_WARNING_SAFE",
+        "sources": [
+          {
+            "id": "8883916630998758688",
+            "name": "West Manga",
+            "language": "id",
+            "homeUrl": "https://v1.westmanga.my",
+            "mirrorUrls": [
+              "https://v1.westmanga.my",
+              "https://v1.westmanga.top"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Mangaworld",
+        "packageName": "eu.kanade.tachiyomi.extension.it.mangaworld",
+        "resources": {
+          "apkUrl": "https://github.com/RONNCC/extensions-source/releases/download/repo-66819a8/tachiyomi-it.mangaworld-v1.6.3.apk",
+          "iconUrl": "https://raw.githubusercontent.com/RONNCC/extensions-source/main/lib-multisrc/mangaworld/res/mipmap-xhdpi/ic_launcher.png",
+          "jarUrl": "https://github.com/RONNCC/extensions-source/releases/download/repo-66819a8/tachiyomi-it.mangaworld-v1.6.3.jar"
+        },
+        "extensionLib": "1.6",
+        "versionCode": "106003",
+        "versionName": "1.6.3",
+        "contentWarning": "CONTENT_WARNING_SAFE",
+        "sources": [
+          {
+            "id": "7114846210461894145",
+            "name": "Mangaworld",
+            "language": "it",
+            "homeUrl": "https://www.mangaworld.me"
+          }
+        ]
+      },
+      {
+        "name": "MangaworldAdult",
+        "packageName": "eu.kanade.tachiyomi.extension.it.mangaworldadult",
+        "resources": {
+          "apkUrl": "https://github.com/RONNCC/extensions-source/releases/download/repo-66819a8/tachiyomi-it.mangaworldadult-v1.6.3.apk",
+          "iconUrl": "https://raw.githubusercontent.com/RONNCC/extensions-source/main/lib-multisrc/mangaworld/res/mipmap-xhdpi/ic_launcher.png",
+          "jarUrl": "https://github.com/RONNCC/extensions-source/releases/download/repo-66819a8/tachiyomi-it.mangaworldadult-v1.6.3.jar"
+        },
+        "extensionLib": "1.6",
+        "versionCode": "106003",
+        "versionName": "1.6.3",
+        "contentWarning": "CONTENT_WARNING_NSFW",
+        "sources": [
+          {
+            "id": "392961957042768607",
+            "name": "MangaworldAdult",
+            "language": "it",
+            "homeUrl": "https://www.mangaworldadult.org"
+          }
+        ]
+      }
+    ]
+  }
+}
